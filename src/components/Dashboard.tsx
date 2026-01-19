@@ -25,7 +25,7 @@ import { FeatureCard } from './FeatureGate';
 import { LandingPage } from './LandingPage';
 import type { Entitlement, LicenseInfo } from '@/types/salable';
 import { isTauriEnvironment, getUsername as getTauriUsername } from '@/lib/tauri';
-import { initializeUser, setStoredUser, clearStoredUser } from '@/lib/user';
+import { initializeUser, setStoredUser, clearStoredUser, isExplicitlyLoggedOut } from '@/lib/user';
 
 interface PlanIds {
   free: string;
@@ -68,6 +68,13 @@ export function Dashboard({ initialUsername, planIds }: DashboardProps) {
     const init = async () => {
       const tauri = isTauriEnvironment();
       setIsTauri(tauri);
+      
+      // Check if user explicitly logged out - if so, show landing page
+      if (isExplicitlyLoggedOut()) {
+        setShowLanding(true);
+        setInitializing(false);
+        return;
+      }
       
       // In Tauri, get username from system
       if (tauri) {
