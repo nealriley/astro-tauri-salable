@@ -14,6 +14,7 @@ import {
   Loader2,
   User
 } from 'lucide-react';
+import { setStoredUser } from '@/lib/user';
 
 interface LandingPageProps {
   onLogin: (username: string) => void;
@@ -52,14 +53,19 @@ export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
         }
       }
 
-      // User doesn't exist or has no subscription - create checkout for free tier
+      // User doesn't exist or has no subscription - store username and create checkout
+      const trimmedUsername = username.trim();
+      
+      // Store the username so we know who they are when they return from checkout
+      setStoredUser(trimmedUsername);
+      
       const response = await fetch('/api/checkout.json', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           planId: freePlanId,
-          granteeId: username.trim(),
-          owner: username.trim(),
+          granteeId: trimmedUsername,
+          owner: trimmedUsername,
         }),
       });
 
