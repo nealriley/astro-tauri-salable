@@ -1,0 +1,80 @@
+{
+  "product": {
+    "name": "CloudVault",
+    "description": "Secure cloud storage for everyone"
+  },
+  "entitlements": [
+    { "name": "basic_storage", "description": "Basic cloud storage (5GB)" },
+    { "name": "file_sharing", "description": "Share files with anyone" },
+    { "name": "advanced_sync", "description": "Real-time sync across devices" },
+    { "name": "priority_support", "description": "24/7 dedicated support access" },
+    { "name": "team_folders", "description": "Shared folders for your team" },
+    { "name": "admin_console", "description": "Manage users and permissions" }
+  ],
+  "plans": [
+    {
+      "name": "Free",
+      "description": "Perfect for getting started",
+      "entitlements": ["basic_storage", "file_sharing"],
+      "lineItem": {
+        "name": "CloudVault Free",
+        "slug": "cloudvault_free_monthly",
+        "priceType": "flat_rate",
+        "intervalType": "recurring",
+        "billingScheme": "flat_rate",
+        "minQuantity": 1,
+        "maxQuantity": 1,
+        "prices": [{
+          "interval": "month",
+          "intervalCount": 1,
+          "currencyOptions": [
+            { "currency": "USD", "unitAmount": 0 }
+          ]
+        }]
+      }
+    },
+    {
+      "name": "Pro",
+      "description": "For power users",
+      "entitlements": ["basic_storage", "file_sharing", "advanced_sync", "priority_support"],
+      "lineItem": {
+        "name": "CloudVault Pro",
+        "slug": "cloudvault_pro_monthly",
+        "priceType": "flat_rate",
+        "intervalType": "recurring",
+        "billingScheme": "flat_rate",
+        "minQuantity": 1,
+        "maxQuantity": 1,
+        "prices": [{
+          "interval": "month",
+          "intervalCount": 1,
+          "currencyOptions": [
+            { "currency": "USD", "unitAmount": 900 }
+          ]
+        }]
+      }
+    },
+    {
+      "name": "Business",
+      "description": "For teams and organizations",
+      "entitlements": ["basic_storage", "file_sharing", "advanced_sync", "priority_support", "team_folders", "admin_console"],
+      "lineItem": {
+        "name": "CloudVault Business",
+        "slug": "cloudvault_business_monthly",
+        "priceType": "flat_rate",
+        "intervalType": "recurring",
+        "billingScheme": "flat_rate",
+        "minQuantity": 1,
+        "maxQuantity": 1,
+        "prices": [{
+          "interval": "month",
+          "intervalCount": 1,
+          "currencyOptions": [
+            { "currency": "USD", "unitAmount": 2900 }
+          ]
+        }]
+      }
+    }
+  ],
+  "_note": "Prices are in cents. $0 = 0, $9 = 900, $29 = 2900"
+}
