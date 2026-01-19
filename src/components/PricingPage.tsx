@@ -142,20 +142,12 @@ export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
         return;
       }
       
-      // In Tauri, get username from system
-      if (tauri) {
-        const tauriUser = await getTauriUsername();
-        setUsername(tauriUser);
-        setStoredUser(tauriUser);
-        setInitializing(false);
-        return;
-      }
-      
-      // In browser, check URL param then localStorage
+      // Check URL param first (takes priority even in Tauri)
       const { username: user, source } = initializeUser();
       
       if (user) {
         setUsername(user);
+        setStoredUser(user);
         // If user came from URL, update the URL to remove the param
         if (source === 'url') {
           const url = new URL(window.location.href);
@@ -164,11 +156,21 @@ export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
           window.history.replaceState({}, '', url.toString());
         }
         setInitializing(false);
-      } else {
-        // No user - show landing page
-        setShowLanding(true);
-        setInitializing(false);
+        return;
       }
+      
+      // No URL param or stored user - in Tauri, fall back to system username
+      if (tauri) {
+        const tauriUser = await getTauriUsername();
+        setUsername(tauriUser);
+        setStoredUser(tauriUser);
+        setInitializing(false);
+        return;
+      }
+      
+      // No user - show landing page
+      setShowLanding(true);
+      setInitializing(false);
     };
     init();
   }, []);
