@@ -18,7 +18,8 @@ import {
   HelpCircle,
   Monitor,
   ShieldCheck,
-  LogOut
+  LogOut,
+  Server
 } from 'lucide-react';
 import { LicenseStatus } from './LicenseStatus';
 import { FeatureCard } from './FeatureGate';
@@ -56,6 +57,12 @@ function LoadingScreen() {
   );
 }
 
+interface OpenCodeStatus {
+  healthy: boolean;
+  version: string | null;
+  error: string | null;
+}
+
 export function Dashboard({ initialUsername, planIds }: DashboardProps) {
   const [username, setUsername] = useState<string | null>(null);
   const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
@@ -63,6 +70,7 @@ export function Dashboard({ initialUsername, planIds }: DashboardProps) {
   const [initializing, setInitializing] = useState(true); // True until we know what to show
   const [showLanding, setShowLanding] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(false);
+  const [openCodeStatus, setOpenCodeStatus] = useState<OpenCodeStatus | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -99,6 +107,26 @@ export function Dashboard({ initialUsername, planIds }: DashboardProps) {
     };
 
     init();
+  }, []);
+
+  // Fetch OpenCode status
+  useEffect(() => {
+    const fetchOpenCodeStatus = async () => {
+      try {
+        const response = await fetch('/api/opencode/status.json');
+        if (response.ok) {
+          const data: OpenCodeStatus = await response.json();
+          setOpenCodeStatus(data);
+        }
+      } catch (err) {
+        setOpenCodeStatus({ healthy: false, version: null, error: 'Failed to fetch status' });
+      }
+    };
+
+    fetchOpenCodeStatus();
+    // Poll every 30 seconds
+    const interval = setInterval(fetchOpenCodeStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // Fetch entitlements and check subscription status when username changes
@@ -331,6 +359,12 @@ export function Dashboard({ initialUsername, planIds }: DashboardProps) {
                 <CardDescription>Common tasks and settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
+                <a href="/files">
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <Server className="h-4 w-4" />
+                    OpenCode Files
+                  </Button>
+                </a>
                 <Button variant="outline" className="w-full justify-start gap-2">
                   <CreditCard className="h-4 w-4" />
                   Manage Subscription
@@ -367,6 +401,19 @@ export function Dashboard({ initialUsername, planIds }: DashboardProps) {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Entitlements</span>
                   <span className="font-medium">{entitlements.length}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-sm items-center">
+                  <span className="text-muted-foreground">OpenCode</span>
+                  {openCodeStatus === null ? (
+                    <span className="text-muted-foreground text-xs">Checking...</span>
+                  ) : openCodeStatus.healthy ? (
+                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                      v{openCodeStatus.version}
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive">Offline</Badge>
+                  )}
                 </div>
               </CardContent>
             </Card>

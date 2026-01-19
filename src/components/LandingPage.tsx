@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,11 @@ import {
   Check,
   ArrowRight,
   Loader2,
-  User
+  User,
+  Folder,
+  File,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -20,11 +24,73 @@ interface LandingPageProps {
   freePlanId: string;
 }
 
+interface FileNode {
+  name: string;
+  path: string;
+  absolute: string;
+  type: 'file' | 'directory';
+  ignored: boolean;
+}
+
 export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
   const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // OpenCode files state
+  const [files, setFiles] = useState<FileNode[]>([]);
+  const [filesLoading, setFilesLoading] = useState(true);
+  const [filesError, setFilesError] = useState<string | null>(null);
+  const [currentPath, setCurrentPath] = useState('.');
+
+  // Fetch files from OpenCode
+  useEffect(() => {
+    const fetchFiles = async () => {
+      setFilesLoading(true);
+      setFilesError(null);
+      
+      try {
+        const response = await fetch(`/api/opencode/files.json?path=${encodeURIComponent(currentPath)}`);
+        const data = await response.json();
+        
+        if (data.error) {
+          setFilesError(data.error);
+          setFiles([]);
+        } else {
+          setFiles(data.files);
+        }
+      } catch (err) {
+        setFilesError('Failed to fetch files');
+        setFiles([]);
+      } finally {
+        setFilesLoading(false);
+      }
+    };
+
+    fetchFiles();
+  }, [currentPath]);
+
+  const refreshFiles = () => {
+    setCurrentPath(prev => prev); // Trigger re-fetch
+    setFilesLoading(true);
+    fetch(`/api/opencode/files.json?path=${encodeURIComponent(currentPath)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          setFilesError(data.error);
+          setFiles([]);
+        } else {
+          setFilesError(null);
+          setFiles(data.files);
+        }
+      })
+      .catch(() => {
+        setFilesError('Failed to fetch files');
+        setFiles([]);
+      })
+      .finally(() => setFilesLoading(false));
+  };
 
   const handleGetStarted = async () => {
     if (!username.trim()) {
@@ -243,6 +309,72 @@ export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
                   </>
                 )}
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* OpenCode Files Section */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Folder className="h-5 w-5 text-primary" />
+                  Files from OpenCode
+                </CardTitle>
+                <CardDescription>
+                  Live file listing from OpenCode server ({currentPath})
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshFiles}
+                disabled={filesLoading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${filesLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {filesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-muted-foreground">Loading files...</span>
+                </div>
+              ) : filesError ? (
+                <div className="flex items-center justify-center py-8 text-destructive">
+                  <AlertCircle className="h-5 w-5 mr-2" />
+                  <span>{filesError}</span>
+                </div>
+              ) : files.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No files found
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
+                  {files.slice(0, 20).map((file) => (
+                    <div 
+                      key={file.path} 
+                      className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                    >
+                      {file.type === 'directory' ? (
+                        <Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                      ) : (
+                        <File className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      )}
+                      <span className="text-sm truncate" title={file.name}>
+                        {file.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {files.length > 20 && (
+                <p className="text-xs text-muted-foreground text-center mt-4">
+                  Showing 20 of {files.length} items
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
