@@ -18,10 +18,9 @@ import { setStoredUser } from '@/lib/user';
 
 interface LandingPageProps {
   onLogin: (username: string) => void;
-  freePlanId: string;
 }
 
-export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
+export function LandingPage({ onLogin }: LandingPageProps) {
   const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,43 +41,22 @@ export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
     setError('');
 
     try {
+      const trimmedUsername = username.trim();
+      
       // First check if user already has a subscription
-      const statusResponse = await fetch(`/api/user/status.json?granteeId=${encodeURIComponent(username.trim())}`);
+      const statusResponse = await fetch(`/api/user/status.json?granteeId=${encodeURIComponent(trimmedUsername)}`);
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         if (statusData.hasSubscription) {
           // User exists with subscription, take them to dashboard
-          onLogin(username.trim());
+          onLogin(trimmedUsername);
           return;
         }
       }
 
-      // User doesn't exist or has no subscription - store username and create checkout
-      const trimmedUsername = username.trim();
-      
-      // Store the username so we know who they are when they return from checkout
+      // User doesn't exist or has no subscription - store username and redirect to pricing
       setStoredUser(trimmedUsername);
-      
-      const response = await fetch('/api/checkout.json', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          planId: freePlanId,
-          granteeId: trimmedUsername,
-          owner: trimmedUsername,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to start signup');
-      }
-
-      // Redirect to Stripe checkout
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      }
+      window.location.href = `/pricing?username=${encodeURIComponent(trimmedUsername)}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       setLoading(false);

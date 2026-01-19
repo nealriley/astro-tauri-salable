@@ -210,7 +210,7 @@ export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
 
   // Show landing page if no user
   if (showLanding || !username) {
-    return <LandingPage onLogin={handleLogin} freePlanId={planIds.free} />;
+    return <LandingPage onLogin={handleLogin} />;
   }
 
   const handleCheckout = async (planKey: keyof typeof PLANS) => {

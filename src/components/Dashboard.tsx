@@ -164,7 +164,7 @@ export function Dashboard({ initialUsername, planIds }: DashboardProps) {
 
   // Show landing page if no user or no subscription
   if (showLanding || !username) {
-    return <LandingPage onLogin={handleLogin} freePlanId={planIds.free} />;
+    return <LandingPage onLogin={handleLogin} />;
   }
 
   const userInitials = username
