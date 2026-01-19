@@ -97,6 +97,9 @@ function createPlans(planIds: { free: string; pro: string; business: string }): 
   };
 }
 
+// Plan tier order (higher index = higher tier)
+const PLAN_TIERS: PlanKey[] = ['free', 'pro', 'business'];
+
 // Determine user's current plan based on their entitlements
 function detectCurrentPlan(entitlementNames: string[]): PlanKey | null {
   // Check from highest tier to lowest
@@ -104,6 +107,14 @@ function detectCurrentPlan(entitlementNames: string[]): PlanKey | null {
   if (entitlementNames.includes('advanced_sync')) return 'pro';
   if (entitlementNames.includes('basic_storage')) return 'free';
   return null;
+}
+
+// Check if selecting a plan would be a downgrade
+function isDowngrade(currentPlan: PlanKey | null, targetPlan: PlanKey): boolean {
+  if (!currentPlan) return false;
+  const currentTier = PLAN_TIERS.indexOf(currentPlan);
+  const targetTier = PLAN_TIERS.indexOf(targetPlan);
+  return targetTier < currentTier;
 }
 
 interface PlanIds {
@@ -302,11 +313,12 @@ export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
             const plan = PLANS[planKey];
             const isPopular = 'popular' in plan && plan.popular;
             const isCurrentPlan = currentPlan === planKey;
+            const isPlanDowngrade = isDowngrade(currentPlan, planKey);
             
             return (
               <Card 
                 key={planKey} 
-                className={`relative ${isPopular && !isCurrentPlan ? 'border-primary shadow-lg scale-105' : ''} ${isCurrentPlan ? 'border-green-500 border-2 bg-green-50/50 dark:bg-green-950/20' : ''}`}
+                className={`relative ${isPopular && !isCurrentPlan && !isPlanDowngrade ? 'border-primary shadow-lg scale-105' : ''} ${isCurrentPlan ? 'border-green-500 border-2 bg-green-50/50 dark:bg-green-950/20' : ''} ${isPlanDowngrade ? 'opacity-60' : ''}`}
               >
                 {isCurrentPlan && (
                   <Badge variant="default" className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500">
@@ -352,6 +364,10 @@ export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
                   ) : isCurrentPlan ? (
                     <Button className="w-full" variant="secondary" disabled>
                       Active
+                    </Button>
+                  ) : isPlanDowngrade ? (
+                    <Button className="w-full" variant="outline" disabled>
+                      Downgrade N/A
                     </Button>
                   ) : (
                     <Button 
