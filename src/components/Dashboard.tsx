@@ -27,8 +27,15 @@ import type { Entitlement, LicenseInfo } from '@/types/salable';
 import { isTauriEnvironment, getUsername as getTauriUsername } from '@/lib/tauri';
 import { initializeUser, setStoredUser, clearStoredUser } from '@/lib/user';
 
+interface PlanIds {
+  free: string;
+  pro: string;
+  business: string;
+}
+
 interface DashboardProps {
   initialUsername?: string;
+  planIds: PlanIds;
 }
 
 // Loading screen component
@@ -49,7 +56,7 @@ function LoadingScreen() {
   );
 }
 
-export function Dashboard({ initialUsername }: DashboardProps) {
+export function Dashboard({ initialUsername, planIds }: DashboardProps) {
   const [username, setUsername] = useState<string | null>(null);
   const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
   const [isTauri, setIsTauri] = useState(false);
@@ -157,7 +164,7 @@ export function Dashboard({ initialUsername }: DashboardProps) {
 
   // Show landing page if no user or no subscription
   if (showLanding || !username) {
-    return <LandingPage onLogin={handleLogin} />;
+    return <LandingPage onLogin={handleLogin} freePlanId={planIds.free} />;
   }
 
   const userInitials = username

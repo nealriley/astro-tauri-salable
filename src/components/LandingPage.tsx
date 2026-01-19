@@ -15,14 +15,12 @@ import {
   User
 } from 'lucide-react';
 
-// Free tier plan ID
-const FREE_PLAN_ID = 'plan_01KFB70W59CMN03REKPSF6WHPH';
-
 interface LandingPageProps {
   onLogin: (username: string) => void;
+  freePlanId: string;
 }
 
-export function LandingPage({ onLogin }: LandingPageProps) {
+export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
   const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,7 +46,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          planId: FREE_PLAN_ID,
+          planId: freePlanId,
           granteeId: username.trim(),
           owner: username.trim(),
         }),

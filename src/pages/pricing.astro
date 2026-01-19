@@ -3,8 +3,15 @@ import Layout from '../layouts/Layout.astro';
 import PricingPage from '../components/PricingPage';
 
 const username = Astro.url.searchParams.get('username') || undefined;
+
+// Pass plan IDs from server environment to client
+const planIds = {
+  free: import.meta.env.SALABLE_PLAN_FREE,
+  pro: import.meta.env.SALABLE_PLAN_PRO,
+  business: import.meta.env.SALABLE_PLAN_BUSINESS,
+};
 ---
 
 <Layout title="CloudVault - Pricing">
-  <PricingPage client:load initialUsername={username} />
+  <PricingPage client:load initialUsername={username} planIds={planIds} />
 </Layout>

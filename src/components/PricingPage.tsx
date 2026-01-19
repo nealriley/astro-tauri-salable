@@ -32,60 +32,69 @@ function LoadingScreen() {
   );
 }
 
-// CloudVault Plan IDs from Salable
-const PLANS = {
-  free: {
-    id: 'plan_01KFB70W59CMN03REKPSF6WHPH',
-    name: 'Free',
-    price: 0,
-    description: 'Perfect for getting started',
-    // Entitlements that identify this plan
-    identifyingEntitlements: ['basic_storage'],
-    features: [
-      { name: 'Basic Storage (5GB)', included: true },
-      { name: 'File Sharing', included: true },
-      { name: 'Advanced Sync', included: false },
-      { name: 'Priority Support', included: false },
-      { name: 'Team Folders', included: false },
-      { name: 'Admin Console', included: false },
-    ]
-  },
-  pro: {
-    id: 'plan_01KFB70X3XQMQE2DNHHGMQWXPJ',
-    name: 'Pro',
-    price: 9,
-    description: 'For power users',
-    popular: true,
-    // Pro has advanced_sync which Free doesn't have
-    identifyingEntitlements: ['advanced_sync'],
-    features: [
-      { name: 'Basic Storage (50GB)', included: true },
-      { name: 'File Sharing', included: true },
-      { name: 'Advanced Sync', included: true },
-      { name: 'Priority Support', included: true },
-      { name: 'Team Folders', included: false },
-      { name: 'Admin Console', included: false },
-    ]
-  },
-  business: {
-    id: 'plan_01KFB70Y1AN4YVD577JJ7T8JKN',
-    name: 'Business',
-    price: 29,
-    description: 'For teams and organizations',
-    // Business has admin_console which Pro doesn't have
-    identifyingEntitlements: ['admin_console'],
-    features: [
-      { name: 'Basic Storage (500GB)', included: true },
-      { name: 'File Sharing', included: true },
-      { name: 'Advanced Sync', included: true },
-      { name: 'Priority Support', included: true },
-      { name: 'Team Folders', included: true },
-      { name: 'Admin Console', included: true },
-    ]
-  }
-};
+// Plan configuration (IDs come from props/env)
+interface PlanConfig {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  popular?: boolean;
+  identifyingEntitlements: string[];
+  features: { name: string; included: boolean }[];
+}
 
-type PlanKey = keyof typeof PLANS;
+type PlanKey = 'free' | 'pro' | 'business';
+
+function createPlans(planIds: { free: string; pro: string; business: string }): Record<PlanKey, PlanConfig> {
+  return {
+    free: {
+      id: planIds.free,
+      name: 'Free',
+      price: 0,
+      description: 'Perfect for getting started',
+      identifyingEntitlements: ['basic_storage'],
+      features: [
+        { name: 'Basic Storage (5GB)', included: true },
+        { name: 'File Sharing', included: true },
+        { name: 'Advanced Sync', included: false },
+        { name: 'Priority Support', included: false },
+        { name: 'Team Folders', included: false },
+        { name: 'Admin Console', included: false },
+      ]
+    },
+    pro: {
+      id: planIds.pro,
+      name: 'Pro',
+      price: 9,
+      description: 'For power users',
+      popular: true,
+      identifyingEntitlements: ['advanced_sync'],
+      features: [
+        { name: 'Basic Storage (50GB)', included: true },
+        { name: 'File Sharing', included: true },
+        { name: 'Advanced Sync', included: true },
+        { name: 'Priority Support', included: true },
+        { name: 'Team Folders', included: false },
+        { name: 'Admin Console', included: false },
+      ]
+    },
+    business: {
+      id: planIds.business,
+      name: 'Business',
+      price: 29,
+      description: 'For teams and organizations',
+      identifyingEntitlements: ['admin_console'],
+      features: [
+        { name: 'Basic Storage (500GB)', included: true },
+        { name: 'File Sharing', included: true },
+        { name: 'Advanced Sync', included: true },
+        { name: 'Priority Support', included: true },
+        { name: 'Team Folders', included: true },
+        { name: 'Admin Console', included: true },
+      ]
+    }
+  };
+}
 
 // Determine user's current plan based on their entitlements
 function detectCurrentPlan(entitlementNames: string[]): PlanKey | null {
@@ -96,11 +105,18 @@ function detectCurrentPlan(entitlementNames: string[]): PlanKey | null {
   return null;
 }
 
-interface PricingPageProps {
-  initialUsername?: string;
+interface PlanIds {
+  free: string;
+  pro: string;
+  business: string;
 }
 
-export function PricingPage({ initialUsername }: PricingPageProps) {
+interface PricingPageProps {
+  initialUsername?: string;
+  planIds: PlanIds;
+}
+
+export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
   const [username, setUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +124,9 @@ export function PricingPage({ initialUsername }: PricingPageProps) {
   const [showLanding, setShowLanding] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<PlanKey | null>(null);
   const [checkingEntitlements, setCheckingEntitlements] = useState(false);
+  
+  // Create plans with the provided IDs
+  const PLANS = createPlans(planIds);
 
   useEffect(() => {
     const init = async () => {
@@ -179,7 +198,7 @@ export function PricingPage({ initialUsername }: PricingPageProps) {
 
   // Show landing page if no user
   if (showLanding || !username) {
-    return <LandingPage onLogin={handleLogin} />;
+    return <LandingPage onLogin={handleLogin} freePlanId={planIds.free} />;
   }
 
   const handleCheckout = async (planKey: keyof typeof PLANS) => {

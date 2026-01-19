@@ -4,8 +4,15 @@ import Dashboard from '../components/Dashboard';
 
 // Get username from query param if provided (for testing without Tauri)
 const username = Astro.url.searchParams.get('username') || undefined;
+
+// Pass plan IDs from server environment to client
+const planIds = {
+  free: import.meta.env.SALABLE_PLAN_FREE,
+  pro: import.meta.env.SALABLE_PLAN_PRO,
+  business: import.meta.env.SALABLE_PLAN_BUSINESS,
+};
 ---
 
 <Layout title="Salable Demo - License Management">
-  <Dashboard client:load initialUsername={username} />
+  <Dashboard client:load initialUsername={username} planIds={planIds} />
 </Layout>
