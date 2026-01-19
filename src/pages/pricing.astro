@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PricingPage from '../components/PricingPage';
+
+const username = Astro.url.searchParams.get('username') || undefined;
+---
+
+<Layout title="CloudVault - Pricing">
+  <PricingPage client:load initialUsername={username} />
+</Layout>

@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const granteeId = Astro.url.searchParams.get('granteeId') || 'unknown';
+---
+
+<Layout title="CloudVault - Success">
+  <div class="min-h-screen bg-background flex items-center justify-center p-4">
+    <div class="max-w-md w-full text-center rounded-xl border bg-card text-card-foreground shadow p-6">
+      <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-semibold mb-2">Welcome to CloudVault!</h2>
+      <p class="text-sm text-muted-foreground mb-4">
+        Your subscription is now active
+      </p>
+      <p class="text-muted-foreground mb-6">
+        Thank you for subscribing! Your account <code class="bg-muted px-2 py-0.5 rounded">{granteeId}</code> now has access to all your plan's features.
+      </p>
+      <a 
+        href={`/?username=${encodeURIComponent(granteeId)}`}
+        class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+      >
+        Go to Dashboard
+      </a>
+    </div>
+  </div>
+</Layout>
