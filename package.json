@@ -4,12 +4,14 @@
   "version": "0.1.0",
   "description": "Tauri + Astro SSR + React + Salable Demo",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --host",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
+    "tauri:dev:local": "tauri dev -c '{\"build\":{\"devUrl\":\"http://localhost:4321\"}}'",
+    "tauri:dev:headless": "./scripts/tauri-headless.sh",
     "tauri:build": "tauri build"
   },
   "dependencies": {

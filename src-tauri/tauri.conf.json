@@ -5,7 +5,7 @@
   "identifier": "com.salable.demo",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:4321",
+    "devUrl": "http://neals-mac-studio:4321",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
