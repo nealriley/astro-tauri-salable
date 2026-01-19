@@ -78,20 +78,23 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     setError('');
 
     try {
+      const trimmedUsername = username.trim();
+      
       // Check if user has a subscription
-      const statusResponse = await fetch(`/api/user/status.json?granteeId=${encodeURIComponent(username.trim())}`);
+      const statusResponse = await fetch(`/api/user/status.json?granteeId=${encodeURIComponent(trimmedUsername)}`);
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         if (statusData.hasSubscription) {
-          // User has subscription, take them to dashboard
-          onLogin(username.trim());
+          // User has subscription - store username and go to dashboard
+          setStoredUser(trimmedUsername);
+          onLogin(trimmedUsername);
           return;
         }
       }
 
-      // User doesn't have a subscription
-      setError('No account found. Please sign up first.');
-      setLoading(false);
+      // User doesn't have a subscription - store username and redirect to pricing
+      setStoredUser(trimmedUsername);
+      window.location.href = `/pricing?username=${encodeURIComponent(trimmedUsername)}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       setLoading(false);
