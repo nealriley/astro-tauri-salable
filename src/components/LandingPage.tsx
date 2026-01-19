@@ -41,7 +41,18 @@ export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
     setError('');
 
     try {
-      // Create checkout for free tier
+      // First check if user already has a subscription
+      const statusResponse = await fetch(`/api/user/status.json?granteeId=${encodeURIComponent(username.trim())}`);
+      if (statusResponse.ok) {
+        const statusData = await statusResponse.json();
+        if (statusData.hasSubscription) {
+          // User exists with subscription, take them to dashboard
+          onLogin(username.trim());
+          return;
+        }
+      }
+
+      // User doesn't exist or has no subscription - create checkout for free tier
       const response = await fetch('/api/checkout.json', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -68,7 +79,7 @@ export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username.trim()) {
       setError('Please enter your username');
       return;
@@ -79,7 +90,28 @@ export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
       return;
     }
 
-    onLogin(username.trim());
+    setLoading(true);
+    setError('');
+
+    try {
+      // Check if user has a subscription
+      const statusResponse = await fetch(`/api/user/status.json?granteeId=${encodeURIComponent(username.trim())}`);
+      if (statusResponse.ok) {
+        const statusData = await statusResponse.json();
+        if (statusData.hasSubscription) {
+          // User has subscription, take them to dashboard
+          onLogin(username.trim());
+          return;
+        }
+      }
+
+      // User doesn't have a subscription
+      setError('No account found. Please sign up first.');
+      setLoading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setLoading(false);
+    }
   };
 
   const features = [
@@ -192,8 +224,17 @@ export function LandingPage({ onLogin, freePlanId }: LandingPageProps) {
                       onClick={handleLogin}
                       disabled={loading}
                     >
-                      Log In
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Checking account...
+                        </>
+                      ) : (
+                        <>
+                          Log In
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
                     </Button>
                     <p className="text-sm text-muted-foreground">
                       Don't have an account?{' '}

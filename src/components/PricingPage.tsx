@@ -7,10 +7,11 @@ import {
   Cloud,
   Check,
   ArrowLeft,
-  Loader2
+  Loader2,
+  LogOut
 } from 'lucide-react';
 import { isTauriEnvironment, getUsername as getTauriUsername } from '@/lib/tauri';
-import { initializeUser, setStoredUser } from '@/lib/user';
+import { initializeUser, setStoredUser, clearStoredUser } from '@/lib/user';
 import { LandingPage } from './LandingPage';
 import type { LicenseInfo } from '@/types/salable';
 
@@ -124,14 +125,18 @@ export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
   const [showLanding, setShowLanding] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<PlanKey | null>(null);
   const [checkingEntitlements, setCheckingEntitlements] = useState(false);
+  const [isTauri, setIsTauri] = useState(false);
   
   // Create plans with the provided IDs
   const PLANS = createPlans(planIds);
 
   useEffect(() => {
     const init = async () => {
+      const tauri = isTauriEnvironment();
+      setIsTauri(tauri);
+      
       // In Tauri, get username from system
-      if (isTauriEnvironment()) {
+      if (tauri) {
         const tauriUser = await getTauriUsername();
         setUsername(tauriUser);
         setStoredUser(tauriUser);
@@ -189,6 +194,13 @@ export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
     setStoredUser(newUsername);
     setUsername(newUsername);
     setShowLanding(false);
+  };
+
+  const handleLogout = () => {
+    clearStoredUser();
+    setUsername(null);
+    setCurrentPlan(null);
+    setShowLanding(true);
   };
 
   // Show loading screen while initializing
@@ -251,8 +263,11 @@ export function PricingPage({ initialUsername, planIds }: PricingPageProps) {
                 <span className="text-xl font-bold">CloudVault</span>
               </div>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
               Logged in as: <code className="bg-muted px-2 py-0.5 rounded">{username}</code>
+              <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>

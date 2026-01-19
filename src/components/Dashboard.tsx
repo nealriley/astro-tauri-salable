@@ -208,11 +208,9 @@ export function Dashboard({ initialUsername, planIds }: DashboardProps) {
                   <p className="text-sm font-medium">{username}</p>
                   <p className="text-xs text-muted-foreground">Grantee</p>
                 </div>
-                {!isTauri && (
-                  <Button variant="ghost" size="icon" onClick={handleLogout} title="Switch User">
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
